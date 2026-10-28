@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Change one axiom, change the geometry</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&family=DM+Sans:wght@400;700&display=swap">
+<style>
+:root{--bg:#fffdee;--ink:#000;--card:#fffdee;--pink:#ffd6e5;--green:#d4ebd3;--yellow:#ffefb8;--red:#b91c1c;--grid:rgba(0,0,0,.07);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a2b;--ink:#f3efe6;--card:#1d2540;--pink:#5a2a45;--green:#274433;--yellow:#4a4022;--red:#ff8a80;--grid:rgba(255,255,255,.06)}}
+:root[data-theme="dark"]{--bg:#141a2b;--ink:#f3efe6;--card:#1d2540;--pink:#5a2a45;--green:#274433;--yellow:#4a4022;--red:#ff8a80;--grid:rgba(255,255,255,.06)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:'DM Sans',sans-serif;padding:24px;line-height:1.4}
+main{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.box{background:var(--card);border:2px solid var(--ink);border-radius:24px;box-shadow:8px 8px 0 var(--ink);padding:20px 24px}
+h1{font-family:'Arvo',Georgia,serif;font-size:clamp(26px,5vw,44px);margin:0;background:var(--yellow);display:inline-block}
+.eb{color:var(--red);font-weight:700;letter-spacing:2px;font-size:14px;margin:0 0 8px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+button{font:700 18px 'DM Sans',sans-serif;color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:10px 22px;cursor:pointer;box-shadow:4px 4px 0 var(--ink)}
+button[aria-pressed="true"]{background:var(--pink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+label{font-weight:700;display:block;margin:14px 0 6px}
+input[type=range]{width:100%}
+svg{width:100%;height:auto;display:block}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.k{font-family:'Arvo',Georgia,serif;font-size:34px;font-weight:700;color:var(--red);margin:0}
+small{opacity:.8}
+</style></head><body><main>
+<div><p class="eb">PHILOSOPHY OF MATHEMATICS · INTERACTIVE</p><h1>Change one axiom, change the geometry</h1></div>
+<div class="box"><p style="margin:0 0 12px">Keep Euclid’s first four postulates. Change only the parallel postulate and the same triangle behaves differently.</p>
+<div class="btns" role="group" aria-label="Choose a geometry">
+<button data-g="flat" aria-pressed="true">Flat (Euclid)</button>
+<button data-g="sphere" aria-pressed="false">Sphere</button>
+<button data-g="hyper" aria-pressed="false">Hyperbolic</button></div>
+<label for="area">Triangle size: area ÷ R² = <span id="av">1.00</span></label>
+<input id="area" type="range" min="0.1" max="2.5" step="0.05" value="1">
+<svg id="s" viewBox="0 0 600 320" role="img" aria-label="A triangle whose sides curve outward on a sphere and inward in hyperbolic geometry"></svg></div>
+<div class="out">
+<div class="box"><p class="eb">ANGLE SUM</p><p class="k" id="sum">180°</p><small id="rule">Always exactly 180° in flat space.</small></div>
+<div class="box"><p class="eb">PARALLELS THROUGH A POINT</p><p class="k" id="par">exactly one</p><small id="pn">Given a line and a point off it.</small></div></div>
+<div class="box"><small>Spherical excess and hyperbolic defect both equal the triangle’s area divided by R², in radians (Greenberg, 2008). The curved sides are a schematic picture of that effect.</small></div>
+</main>
+<script>
+(function(){
+var g="flat",A=[110,270],B=[490,270],C=[300,50],cen=[(110+490+300)/3,(270+270+50)/3];
+var svg=document.getElementById("s"),rng=document.getElementById("area");
+function edge(P,Q,b){var m=[(P[0]+Q[0])/2,(P[1]+Q[1])/2],dx=m[0]-cen[0],dy=m[1]-cen[1],l=Math.hypot(dx,dy)||1;
+return "M"+P+" Q"+(m[0]+dx/l*b)+","+(m[1]+dy/l*b)+" "+Q}
+function draw(){var a=parseFloat(rng.value),b=g==="sphere"?a*22:g==="hyper"?-a*22:0;
+var d=edge(A,B,b)+" "+edge(B,C,b).replace("M"+B+" ","")+" "+edge(C,A,b).replace("M"+C+" ","");
+var fill=g==="sphere"?"var(--green)":g==="hyper"?"var(--pink)":"var(--yellow)";
+svg.innerHTML='<path d="'+d+'" fill="'+fill+'" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/>'+[A,B,C].map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="8" fill="var(--red)" stroke="var(--ink)" stroke-width="3"/>'}).join("");
+document.getElementById("av").textContent=a.toFixed(2);
+var deg=a*180/Math.PI,s=180,r="Always exactly 180° in flat space.",p="exactly one",n="Euclid’s fifth postulate holds.";
+if(g==="sphere"){s=180+deg;r="180° + (area ÷ R²) × 57.3°, so more than 180°.";p="none";n="Every pair of great circles meets."}
+if(g==="hyper"){s=180-deg;r="180° − (area ÷ R²) × 57.3°, so less than 180°.";p="infinitely many";n="Many lines through the point miss the first line."}
+document.getElementById("sum").textContent=s.toFixed(1)+"°";document.getElementById("rule").textContent=r;
+document.getElementById("par").textContent=p;document.getElementById("pn").textContent=n}
+document.querySelectorAll("button[data-g]").forEach(function(b){b.addEventListener("click",function(){g=b.dataset.g;
+document.querySelectorAll("button[data-g]").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});draw()})});
+rng.addEventListener("input",draw);draw();})();
+</script></body></html>
